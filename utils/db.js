@@ -1,4 +1,5 @@
 const { MongoClient } = require('mongodb');
+const crypto = require('crypto');
 
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = process.env.DB_PORT || 27017;
@@ -26,6 +27,21 @@ class DBClient {
 
   async nbFiles() {
     return this.db.collection('files').countDocuments();
+  }
+
+  async createUser(email, password) {
+    // Check if the email already exists
+    const existingUser = await this.db.collection('users').findOne({ email });
+    if (existingUser) {
+      throw new Error('Email already exists');
+    }
+
+    // Hash the password
+    const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
+
+    // Insert the new user into the database
+    const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
+    return { id: result.insertedId, email };
   }
 }
 
