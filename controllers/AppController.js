@@ -1,12 +1,9 @@
-// AppController.js
-const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
+const dbClient = require('../utils/db');
 
 class AppController {
-  static async getStatus(req, res) {
-    const dbAlive = dbClient.isAlive();
-    const redisAlive = redisClient.isAlive();
-    res.status(200).json({ redis: redisAlive, db: dbAlive });
+  static getStatus(req, res) {
+    res.status(200).json({ redis: redisClient.isAlive(), db: dbClient.isAlive() });
   }
 
   static async getStats(req, res) {
