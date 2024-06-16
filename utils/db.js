@@ -1,5 +1,6 @@
+// utils/db.js
 const { MongoClient } = require('mongodb');
-const crypto = require('crypto');
+const sha1 = require('sha1');
 
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = process.env.DB_PORT || 27017;
@@ -30,16 +31,14 @@ class DBClient {
   }
 
   async createUser(email, password) {
-    // Check if the email already exists
-    const existingUser = await this.db.collection('users').findOne({ email });
-    if (existingUser) {
-      throw new Error('Email already exists');
+    const userExists = await this.db.collection('users').findOne({ email });
+
+    if (userExists) {
+      throw new Error('User already exists');
     }
 
-    // Hash the password
-    const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
+    const hashedPassword = sha1(password);
 
-    // Insert the new user into the database
     const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
     return { id: result.insertedId, email };
   }
