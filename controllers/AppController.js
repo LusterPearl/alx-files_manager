@@ -8,9 +8,13 @@ class AppController {
   }
 
   static async getStats(req, res) {
-    const usersCount = await dbClient.nbUsers();
-    const filesCount = await dbClient.nbFiles();
-    res.status(200).json({ users: usersCount, files: filesCount });
+    try {
+      const usersCount = await dbClient.nbUsers();
+      const filesCount = await dbClient.nbFiles();
+      res.status(200).json({ users: usersCount, files: filesCount });
+    } catch (err) {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 }
 
