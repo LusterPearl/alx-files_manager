@@ -1,6 +1,6 @@
 // utils/redis.js
-// utils/redis.js
 const redis = require('redis');
+const { promisify } = require('util');
 
 class RedisClient {
   constructor() {
@@ -8,10 +8,18 @@ class RedisClient {
     this.client.on('error', (err) => {
       console.error('Redis client error:', err);
     });
+
+    this.pingAsync = promisify(this.client.ping).bind(this.client);
   }
 
-  isAlive() {
-    return this.client.connected;
+  async isAlive() {
+    try {
+      const response = await this.pingAsync();
+      return response === 'PONG';
+    } catch (err) {
+      console.error('Error checking Redis connection:', err);
+      return false;
+    }
   }
 
   async get(key) {
