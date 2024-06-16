@@ -1,3 +1,4 @@
+// controllers/AppController.js
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
 
@@ -7,9 +8,9 @@ class AppController {
   }
 
   static async getStats(req, res) {
-    const users = await dbClient.nbUsers();
-    const files = await dbClient.nbFiles();
-    res.status(200).json({ users, files });
+    const usersCount = await dbClient.nbUsers();
+    const filesCount = await dbClient.nbFiles();
+    res.status(200).json({ users: usersCount, files: filesCount });
   }
 }
 
