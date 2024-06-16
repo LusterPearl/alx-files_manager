@@ -1,6 +1,5 @@
-// user controller
 const sha1 = require('sha1');
-const User = require('../models/User');
+const { getDB } = require('../utils/db');
 
 class UsersController {
   static async postNew(req, res) {
@@ -14,16 +13,17 @@ class UsersController {
       return res.status(400).json({ error: 'Missing password' });
     }
 
-    const existingUser = await User.findOne({ email });
+    const db = getDB();
+    const existingUser = await db.collection('users').findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'Already exist' });
     }
 
     const hashedPassword = sha1(password);
-    const newUser = new User({ email, password: hashedPassword });
-    await newUser.save();
+    const newUser = { email, password: hashedPassword };
+    const result = await db.collection('users').insertOne(newUser);
 
-    res.status(201).json({ id: newUser._id, email: newUser.email });
+    res.status(201).json({ id: result.insertedId, email: newUser.email });
   }
 }
 
