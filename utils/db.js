@@ -1,5 +1,5 @@
 // utils/db.js
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const sha1 = require('sha1');
 
 const DB_HOST = process.env.DB_HOST || 'localhost';
@@ -13,6 +13,7 @@ class DBClient {
 
     this.client.connect().then(() => {
       this.db = this.client.db(DB_DATABASE);
+      console.log('MongoDB connected successfully');
     }).catch((err) => {
       console.error('MongoDB Client Error:', err);
     });
