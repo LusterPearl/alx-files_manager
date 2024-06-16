@@ -31,21 +31,18 @@ class DBClient {
   }
 
   async createUser(email, password) {
-    try {
-      const userExists = await this.db.collection('users').findOne({ email });
-  
-      if (userExists) {
-        throw new Error('User already exists');
-      }
-  
-      const hashedPassword = sha1(password);
-  
-      const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
-      return { id: result.insertedId, email };
-    } catch (error) {
-      throw new Error(`Failed to create user: ${error.message}`);
+    const userExists = await this.db.collection('users').findOne({ email });
+
+    if (userExists) {
+      throw new Error('User already exists');
     }
-  }  
-  
+
+    const hashedPassword = sha1(password);
+
+    const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
+    return { id: result.insertedId, email };
+  }
+}
+
 const dbClient = new DBClient();
 module.exports = dbClient;
