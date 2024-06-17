@@ -1,4 +1,3 @@
-// routes/index.js
 const express = require('express');
 const AppController = require('../controllers/AppController');
 const UsersController = require('../controllers/UsersController');
@@ -11,7 +10,8 @@ router.get('/status', AppController.getStatus);
 router.get('/stats', AppController.getStats);
 router.post('/users', UsersController.postNew);
 router.post('/files', FilesController.postUpload);
-router.get('/files/:id', FilesController.getFile);
+router.get('/files/:id', FilesController.getShow);
+router.get('/files', FilesController.getIndex);
 
 router.get('/connect', AuthController.getConnect);
 router.get('/disconnect', AuthController.getDisconnect);
