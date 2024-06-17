@@ -1,11 +1,14 @@
+// controllers/AuthController.js
 const { v4: uuidv4 } = require('uuid');
-const sha1 = require('sha1');
 const redisClient = require('../utils/redis');
 const dbClient = require('../utils/db');
+const sha1 = require('sha1');
+const { Buffer } = require('buffer');
 
 class AuthController {
   static async getConnect(req, res) {
-    const authHeader = req.header('Authorization');
+    const authHeader = req.headers.authorization;
+
     if (!authHeader || !authHeader.startsWith('Basic ')) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -25,11 +28,13 @@ class AuthController {
     const key = `auth_${token}`;
 
     await redisClient.set(key, user._id.toString(), 86400); // 24 hours
+
     return res.status(200).json({ token });
   }
 
   static async getDisconnect(req, res) {
     const token = req.header('X-Token');
+
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -42,6 +47,7 @@ class AuthController {
     }
 
     await redisClient.del(key);
+
     return res.status(204).send();
   }
 }

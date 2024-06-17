@@ -43,6 +43,18 @@ class DBClient {
     const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
     return { id: result.insertedId, email };
   }
+
+  async getUserByEmail(email) {
+    return this.db.collection('users').findOne({ email });
+  }
+
+  async getUserById(id) {
+    return this.db.collection('users').findOne({ _id: new ObjectId(id) });
+  }
+
+  getObjectId(id) {
+    return new ObjectId(id);
+  }
 }
 
 const dbClient = new DBClient();
