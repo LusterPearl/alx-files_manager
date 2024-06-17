@@ -1,8 +1,8 @@
-// controllers/FilesController.js
 const dbClient = require('../utils/db');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const mime = require('mime-types');
+const { ObjectID } = require('mongodb'); // Add this line to import ObjectID from mongodb
 
 class FilesController {
   static async postUpload(req, res) {
@@ -11,7 +11,7 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const user = await dbClient.getUserById(token); // Assuming token is user ID for simplicity
+    const user = await dbClient.getUserById(token);
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -31,7 +31,7 @@ class FilesController {
     }
 
     if (parentId !== 0) {
-      const parentFile = await dbClient.db.collection('files').findOne({ _id: dbClient.getObjectId(parentId) });
+      const parentFile = await dbClient.db.collection('files').findOne({ _id: ObjectID(parentId) });
       if (!parentFile) {
         return res.status(400).json({ error: 'Parent not found' });
       }
@@ -45,7 +45,7 @@ class FilesController {
       name,
       type,
       isPublic,
-      parentId: parentId === 0 ? 0 : dbClient.getObjectId(parentId),
+      parentId: parentId === 0 ? 0 : ObjectID(parentId),
     };
 
     if (type === 'folder') {
