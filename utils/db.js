@@ -1,21 +1,23 @@
 // utils/db.js
 const { MongoClient, ObjectId } = require('mongodb');
 const sha1 = require('sha1');
+const dotenv = require('dotenv');
 
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = process.env.DB_PORT || 27017;
-const DB_DATABASE = process.env.DB_DATABASE || 'files_manager';
-const uri = `mongodb://${DB_HOST}:${DB_PORT}/${DB_DATABASE}`;
+dotenv.config();
+
+const url = process.env.DB_URL;
+const dbName = process.env.DB_NAME;
 
 class DBClient {
   constructor() {
-    this.client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
-    this.client.connect().then(() => {
-      this.db = this.client.db(DB_DATABASE);
-      console.log('MongoDB connected successfully');
-    }).catch((err) => {
-      console.error('MongoDB Client Error:', err);
+    this.client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+    this.client.connect((err) => {
+      if (err) {
+        console.error('Database connection error:', err);
+        process.exit(1);
+      }
+      this.db = this.client.db(dbName);
+      console.log('Database connected');
     });
   }
 
@@ -23,33 +25,10 @@ class DBClient {
     return this.client.isConnected();
   }
 
-  async nbUsers() {
-    return this.db.collection('users').countDocuments();
-  }
-
-  async nbFiles() {
-    return this.db.collection('files').countDocuments();
-  }
-
   async createUser(email, password) {
-    const userExists = await this.db.collection('users').findOne({ email });
-
-    if (userExists) {
-      throw new Error('User already exists');
-    }
-
     const hashedPassword = sha1(password);
-
-    const result = await this.db.collection('users').insertOne({ email, password: hashedPassword });
-    return { id: result.insertedId, email };
-  }
-
-  async getUserByEmail(email) {
-    return this.db.collection('users').findOne({ email });
-  }
-
-  async getUserById(id) {
-    return this.db.collection('users').findOne({ _id: new ObjectId(id) });
+    const user = await this.db.collection('users').insertOne({ email, password: hashedPassword });
+    return { id: user.insertedId, email };
   }
 
   getObjectId(id) {

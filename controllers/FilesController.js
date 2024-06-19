@@ -2,14 +2,14 @@ const { v4: uuidv4 } = require('uuid');
 const mime = require('mime-types');
 const fs = require('fs');
 const path = require('path');
-const { ObjectId } = require('mongodb'); // Add this line
-const dbClient = require('../utils/db'); // Modify this line
-const redisClient = require('../utils/redis'); // Modify this line
+const { ObjectId } = require('mongodb');
+const dbClient = require('../utils/db');
+const redisClient = require('../utils/redis');
 const { getUserFromToken } = require('../utils/auth');
 
 class FilesController {
   static async postUpload(req, res) {
-    const db = await dbClient.db; // Correct the way to get the DB
+    const db = await dbClient.db;
     const { name, type, parentId = 0, isPublic = false, data } = req.body;
     
     // Retrieve user from token
@@ -31,7 +31,7 @@ class FilesController {
 
     // Check parentId
     if (parentId !== 0) {
-      const parentFile = await db.collection('files').findOne({ _id: ObjectId(parentId) }); // Add ObjectId conversion
+      const parentFile = await db.collection('files').findOne({ _id: ObjectId(parentId) });
       if (!parentFile) {
         return res.status(400).json({ error: 'Parent not found' });
       }
@@ -46,7 +46,7 @@ class FilesController {
       name,
       type,
       isPublic,
-      parentId: parentId === 0 ? 0 : ObjectId(parentId), // Add ObjectId conversion
+      parentId: parentId === 0 ? 0 : ObjectId(parentId),
     };
 
     if (type === 'folder') {
@@ -80,7 +80,7 @@ class FilesController {
     const fileId = req.params.id;
     if (!ObjectId.isValid(fileId)) return res.status(404).json({ error: 'Not found' });
 
-    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) }); // Ensure ObjectId conversion
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
     if (!file) return res.status(404).json({ error: 'Not found' });
 
     res.status(200).json(file);
