@@ -1,40 +1,40 @@
 // utils/db.js
-const { MongoClient, ObjectId } = require('mongodb');
-const sha1 = require('sha1');
-const dotenv = require('dotenv');
+import { MongoClient, ObjectID } from 'mongodb';
+import EventEmitter from 'events';
 
-dotenv.config();
-
-const url = process.env.DB_URL;
-const dbName = process.env.DB_NAME;
-
-class DBClient {
+class DBClient extends EventEmitter {
   constructor() {
-    this.client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
-    this.client.connect((err) => {
-      if (err) {
-        console.error('Database connection error:', err);
-        process.exit(1);
-      }
-      this.db = this.client.db(dbName);
-      console.log('Database connected');
+    super();
+    const host = process.env.DB_HOST || 'localhost';
+    const port = process.env.DB_PORT || 27017;
+    const dbName = process.env.DB_DATABASE || 'files_manager';
+
+    this.client = new MongoClient(`mongodb://${host}:${port}`, { useUnifiedTopology: true });
+    this.client.connect().then((client) => {
+      this.db = client.db(dbName);
+      this.usersCollection = this.db.collection('users');
+      this.emit('connected');
+    }).catch((err) => {
+      console.error(err);
     });
   }
 
   isAlive() {
-    return this.client.isConnected();
+    return !!this.db;
   }
 
-  async createUser(email, password) {
-    const hashedPassword = sha1(password);
-    const user = await this.db.collection('users').insertOne({ email, password: hashedPassword });
-    return { id: user.insertedId, email };
+  async nbUsers() {
+    return this.usersCollection.countDocuments();
   }
 
-  getObjectId(id) {
-    return new ObjectId(id);
+  async nbFiles() {
+    return this.db.collection('files').countDocuments();
+  }
+
+  ObjectID(id) {
+    return new ObjectID(id);
   }
 }
 
 const dbClient = new DBClient();
-module.exports = dbClient;
+export default dbClient;

@@ -1,19 +1,16 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const routes = require('./routes');
-const redisClient = require('./utils/redis');
-const dbClient = require('./utils/db');
+// serverjs
+import express from 'express';
+import routes from './routes/index';
+import dbClient from './utils/db';
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(express.json());
 app.use('/', routes);
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+dbClient.on('connected', () => {
+  app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+  });
 });
-
-module.exports = app;
